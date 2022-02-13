@@ -71,10 +71,21 @@ def forge():
     db.session.commit()
     click.echo('Done.')
 
+
+@app.context_processor #注册一个模板上下午的处理函数
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)#返回字典
+
+@app.errorhandler(404)#传入错误处理代码
+def page_not_found(e):
+    user = User.query.first()
+    return render_template('404.html'),404 #返回模板和400状态码
+
 # 程序路由，设置访问地址
 @app.route('/')
 def index():
     user = User.query.first() #读取第一条用户记录
     movies = Movie.query.all()  #读取所有电影记录
     # 返回值中使用函数渲染页面并传入参数
-    return render_template("index.html", user = user ,movies = movies)
+    return render_template("index.html" ,movies = movies)
