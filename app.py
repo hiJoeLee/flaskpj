@@ -21,12 +21,13 @@ class Movie(db.Model):
     title = db.Column(db.String(60))
     year = db.Column(db.String(4))
 
-class Book(db.Model):
+class Books(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     publish = db.Column(db.Boolean) #布尔值
     date = db.Column(db.DateTime) #时间日期
     content = db.Column(db.Text) #长文本
     price = db.Column(db.Float) #浮点数
+
 
 @app.cli.command() # 注册命令
 @click.option('--drop', is_flag=True, help='Create after drop.')  # 设置选项
@@ -36,7 +37,7 @@ def initdb(drop):
     db.create_all()
     click.echo("Initialized database.")
 
-
+@app.cli.command()
 def forge():
     db.create_all()
     name = 'joe'
@@ -53,12 +54,19 @@ def forge():
         {'title': 'The Pork of Music', 'year': '2012'},
         {'title':'JOE','year':'1988'},
     ]
+    books =[
+        {'publish':True,'date':1988-1-1,'content':'aaa','price':180.5},
+        {'publish':True,'date':1987-2-2,'content':'bbb','price':230.8},
+    ]
 
     user = User(name=name)
     db.session.add(user)
     for m in movies:
         movie = Movie(title=m['title'],year=m['year'])
         db.session.add(movie)
+    for k in books:
+        book = Books(publish = k['publish'],price = k['price'])
+        db.session.add(book)
 
     db.session.commit()
     click.echo('Done.')
