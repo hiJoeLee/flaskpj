@@ -1,10 +1,18 @@
 from flask import Flask,render_template,request,redirect,flash,url_for
 import os,sys,click
 from flask_sqlalchemy import SQLAlchemy  # 导入扩展类
+from werkzeug.security import generate_password_hash,check_password_hash
+from flask_login import LoginManager,UserMixin,login_user,login_required,logout_user
 
 
 # 导入flask类,创建对象app
 app = Flask(__name__)
+
+login_manager = LoginManager(app)
+@login_manager.user_loader
+def load_user(user_id):
+    user=User.query.get(int(user_id))
+    return user
 
 #配置数据库
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'data.db')
@@ -13,9 +21,15 @@ app.config['SECRET_KEY'] = 'dev'  # 等同于 app.secret_key = 'dev'
 # 在扩展类实例化前加载配置
 db = SQLAlchemy(app)
 
-class User(db.Model):#创建的表名为user
+class User(db.Model,UserMixin):#创建的表名为user
     id = db.Column(db.Integer,primary_key=True)#整型，主键
     name = db.Column(db.String(20))
+    username = db.Column(db.String(20))
+    password_hash = db.Column(db.String(128))
+    def set_password(self,password):
+        self.password_hash =generate_password_hash(password)
+    def validate_password(self,password):
+        return check_password_hash(self.password_hash,password)
 
 class Movie(db.Model):
     id = db.Column(db.Integer,primary_key=True)
@@ -59,7 +73,6 @@ def forge():
         {'publish':True,'date':1988-1-1,'content':'aaa','price':180.5},
         {'publish':True,'date':1987-2-2,'content':'bbb','price':230.8},
     ]
-
     user = User(name=name)
     db.session.add(user)
     for m in movies:
@@ -68,9 +81,28 @@ def forge():
     for k in books:
         book = Books(publish = k['publish'],price = k['price'])
         db.session.add(book)
-
     db.session.commit()
     click.echo('Done.')
+
+@app.cli.command()
+@click.option('--username', prompt=True, help='The username used to login.')
+@click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True, help='The password used to login.')
+def admin(username, password):
+    """Create user."""
+    db.create_all()
+    user = User.query.first()
+    if user is not None:
+        click.echo('Updating user...')
+        user.username = username
+        user.set_password(password)  # 设置密码
+    else:
+        click.echo('Creating user...')
+        user = User(username=username, name='Admin')
+        user.set_password(password)  # 设置密码
+        db.session.add(user)
+    db.session.commit()  # 提交数据库会话
+    click.echo('Done.')
+
 
 
 @app.context_processor #注册一个模板上下午的处理函数
@@ -127,3 +159,33 @@ def delete(movie_id):
     db.session.commit()  # 提交数据库会话
     flash('Item deleted.')
     return redirect(url_for('index'))  # 重定向回主页
+
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if not username or not password:
+            flash('Invalid input.')
+            return redirect(url_for('login'))
+        user = User.query.first()
+        # 验证用户名和密码是否一致
+        if username == user.username and user.validate_password(password):
+            login_user(user)  # 登入用户
+            flash('Login success.')
+            return redirect(url_for('index'))  # 重定向到主页
+        flash('Invalid username or password.')  # 如果验证失败，显示错误消息
+        return redirect(url_for('login'))  # 重定向回登录页面
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required  # 用于视图保护，后面会详细介绍
+def logout():
+    logout_user()  # 登出用户
+    flash('Goodbye.')
+    return redirect(url_for('index'))  # 重定向回首页
+
+
+
