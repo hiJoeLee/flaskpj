@@ -6,9 +6,9 @@ from flask_login import LoginManager
 # 导入flask类,创建对象app
 app = Flask(__name__)
 #配置数据库
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + 'C://Users//joe//PycharmProjects//flaskpj//data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.path.dirname(app.root_path), 'C://Users//joe//PycharmProjects//flaskpj//data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
-app.config['SECRET_KEY'] = 'dev'  # 等同于 app.secret_key = 'dev'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY','dev' ) # 等同于 app.secret_key = 'dev'
 
 # 在扩展类实例化前加载配置
 db = SQLAlchemy(app)
