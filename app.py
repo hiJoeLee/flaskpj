@@ -2,13 +2,15 @@ from flask import Flask,render_template,request,redirect,flash,url_for
 import os,sys,click
 from flask_sqlalchemy import SQLAlchemy  # 导入扩展类
 from werkzeug.security import generate_password_hash,check_password_hash
-from flask_login import LoginManager,UserMixin,login_user,login_required,logout_user
+from flask_login import LoginManager,UserMixin,login_user,login_required,logout_user,current_user
 
 
 # 导入flask类,创建对象app
 app = Flask(__name__)
 
 login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
 @login_manager.user_loader
 def load_user(user_id):
     user=User.query.get(int(user_id))
@@ -122,6 +124,8 @@ def index():
         # 获取表单数据
         title = request.form.get('title')  # 传入表单对应输入字段的 name 值
         year = request.form.get('year')
+        if not current_user.is_authenticated:  # 如果当前用户未认证
+            return redirect(url_for('index'))  # 重定向到主页
         # 验证数据
         if not title or not year or len(year) > 4 or len(title) > 60:
             flash('Invalid input.')  # 显示错误提示
@@ -137,6 +141,7 @@ def index():
 
 
 @app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
+@login_required
 def edit(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     if request.method == 'POST':  # 处理编辑表单的提交请求
@@ -152,14 +157,15 @@ def edit(movie_id):
         return redirect(url_for('index'))  # 重定向回主页
     return render_template('edit.html', movie=movie)  # 传入被编辑的电影记录
 
+
 @app.route('/movie/delete/<int:movie_id>', methods=['POST'])  # 限定只接受 POST 请求
+@login_required
 def delete(movie_id):
     movie = Movie.query.get_or_404(movie_id)  # 获取电影记录
     db.session.delete(movie)  # 删除对应的记录
     db.session.commit()  # 提交数据库会话
     flash('Item deleted.')
     return redirect(url_for('index'))  # 重定向回主页
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -180,12 +186,32 @@ def login():
         return redirect(url_for('login'))  # 重定向回登录页面
     return render_template('login.html')
 
+
 @app.route('/logout')
 @login_required  # 用于视图保护，后面会详细介绍
 def logout():
     logout_user()  # 登出用户
     flash('Goodbye.')
     return redirect(url_for('index'))  # 重定向回首页
+
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        name = request.form['name']
+        if not name or len(name) > 20:
+            flash('Invalid input.')
+            return redirect(url_for('settings'))
+        current_user.name = name
+        # current_user 会返回当前登录用户的数据库记录对象
+        # 等同于下面的用法
+        # user = User.query.first()
+        # user.name = name
+        db.session.commit()
+        flash('Settings updated.')
+        return redirect(url_for('index'))
+    return render_template('settings.html')
 
 
 
