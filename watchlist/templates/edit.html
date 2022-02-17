@@ -3,8 +3,9 @@
 {% block content %}
 <h3>Edit item</h3>
 <form method="post">
-    Name <input type="text" name="title" autocomplete="off" required value="{{ movie.title }}">
-    Year <input type="text" name="year" autocomplete="off" required value="{{ movie.year }}">
+    车牌 <input class="input1" type="text" name="title" autocomplete="off" required value="{{ movie.title }}">
+    车牌1 <input class="input1" type="text" name="title1" autocomplete="off"  value="{{ movie.title1 }}">
+    电话 <input class="input1" type="text" name="year" autocomplete="off" required value="{{ movie.year }}">
     <input class="btn" type="submit" name="submit" value="Update">
 </form>
 {% endblock %}

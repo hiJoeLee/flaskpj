@@ -99,10 +99,11 @@ input[type=submit] {
 
 input[type=text] {
     border: 1px solid #ddd;
+    width: 180px;
 }
 
 input[name=year] {
-    width: 50px;
+    width: 180px;
 }
 
 .btn {
@@ -139,4 +140,8 @@ input[name=year] {
 
 .inline-form {
     display: inline;
+}
+
+.input1{
+   width: 50px;
 }

@@ -17,7 +17,8 @@ class User(db.Model,UserMixin):#创建的表名为user
 class Movie(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     title = db.Column(db.String(60))
-    year = db.Column(db.String(4))
+    title1 = db.Column(db.String(60))
+    year = db.Column(db.String(11))
 
 class Books(db.Model):
     id = db.Column(db.Integer,primary_key=True)

@@ -11,18 +11,19 @@ def index():
     if request.method == 'POST':  # 判断是否是 POST 请求
         # 获取表单数据
         title = request.form.get('title')  # 传入表单对应输入字段的 name 值
+        title1 = request.form.get('title1')
         year = request.form.get('year')
         if not current_user.is_authenticated:  # 如果当前用户未认证
             return redirect(url_for('index'))  # 重定向到主页
         # 验证数据
-        if not title or not year or len(year) > 4 or len(title) > 60:
+        if not title or not year or len(year) > 11 or len(title) > 60 :
             flash('Invalid input.')  # 显示错误提示
             return redirect(url_for('index'))  # 重定向回主页
         # 保存表单数据到数据库
-        movie = Movie(title=title, year=year)  # 创建记录
+        movie = Movie(title=title , title1=title1 , year=year)  # 创建记录
         db.session.add(movie)  # 添加到数据库会话
         db.session.commit()  # 提交数据库会话
-        flash('Item created.')  # 显示成功创建的提示
+        flash('添加成功！')  # 显示成功创建的提示
         return redirect(url_for('index'))  # 重定向回主页
     movies = Movie.query.all()
     return render_template('index.html', movies=movies)
@@ -34,11 +35,13 @@ def edit(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     if request.method == 'POST':  # 处理编辑表单的提交请求
         title = request.form['title']
+        title1 = request.form['title1']
         year = request.form['year']
-        if not title or not year or len(year) != 4 or len(title) > 60:
-            flash('Invalid input.')
+        if not title or not year or len(year) != 11 or len(title) > 60:
+            flash('无效输入！')
             return redirect(url_for('edit', movie_id=movie_id))  # 重定向回对应的编辑页面
         movie.title = title  # 更新标题
+        movie.title1 = title1
         movie.year = year  # 更新年份
         db.session.commit()  # 提交数据库会话
         flash('Item updated.')

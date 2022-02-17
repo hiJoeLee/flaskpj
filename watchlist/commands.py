@@ -14,19 +14,10 @@ def initdb(drop):
 @app.cli.command()
 def forge():
     db.create_all()
-    name = 'joe'
+    name = '富丽楼业主'
     movies =[
-        {'title': 'My Neighbor Totoro', 'year': '1988'},
-        {'title': 'Dead Poets Society', 'year': '1989'},
-        {'title': 'A Perfect World', 'year': '1993'},
-        {'title': 'Leon', 'year': '1994'},
-        {'title': 'Mahjong', 'year': '1996'},
-        {'title': 'Swallowtail Butterfly', 'year': '1996'},
-        {'title': 'King of Comedy', 'year': '1999'},
-        {'title': 'Devils on the Doorstep', 'year': '1999'},
-        {'title': 'WALL-E', 'year': '2008'},
-        {'title': 'The Pork of Music', 'year': '2012'},
-        {'title':'JOE','year':'1988'},
+        {'title': '粤AX1111', 'title1':'粤BX2222','year': '13822221111'},
+
     ]
     books =[
         {'publish':True,'date':1988-1-1,'content':'aaa','price':180.5},
@@ -35,7 +26,7 @@ def forge():
     user = User(name=name)
     db.session.add(user)
     for m in movies:
-        movie = Movie(title=m['title'],year=m['year'])
+        movie = Movie(title=m['title'],title1=m['title1'],year=m['year'])
         db.session.add(movie)
     for k in books:
         book = Books(publish = k['publish'],price = k['price'])
